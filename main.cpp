@@ -8,6 +8,8 @@
 #include <algorithm>
 #include <limits>
 #include <chrono>
+#include <iomanip>
+#include <cmath>
 
 // Class representing an occupation with relevant information
 class Occupation {
@@ -21,7 +23,6 @@ public:
     Occupation(const std::string& area, const std::string& prim_state, const std::string& occ_title, double tot_emp, double a_mean)
             : AREA(area), PRIM_STATE(prim_state), OCC_TITLE(occ_title), TOT_EMP(tot_emp), A_MEAN(a_mean) {}
 };
-
 
 // Class representing information about a zip code, including home cost and associated occupations
 class HouseInfo {
@@ -49,7 +50,7 @@ bool isNumeric(const std::string& str) {
 
 // Function to convert a string to double, handling non-numeric cases
 double convertToDouble(const std::string& str) {
-    return isNumeric(str) ? std::stod(str) : 0.0;
+    return isdigit(str[0]) ? std::stod(str) : 0.0;
 }
 
 std::set<std::string> searchOccupations(const std::map<std::string, std::vector<Occupation>> occupationData, const std::string& keyword) {
@@ -62,8 +63,6 @@ std::set<std::string> searchOccupations(const std::map<std::string, std::vector<
             }
         }
     }
-
-
     return matchingTitles;
 }
 
@@ -91,29 +90,94 @@ void shellSort(std::map<std::string, std::vector<HouseInfo>>& HouseData){
     std::cout << "Shell Sort Time in Milliseconds: " <<  duration.count()/1000.0 << std::endl;
 }
 
+int partition(std::vector<HouseInfo>& houses, int low, int high)
+{
+    // Select the pivot element
+    double pivot = houses[low].MeanValue;
+    int up = low, down = high;
+    while(up < down)
+    {
+        for (int j = up; j < high; j++)
+        {
+            if (houses[up].MeanValue > pivot)
+                break;
+            up++;
+        }
+        for (int j = high; j > low; j--)
+        {
+            if (houses[down].MeanValue < pivot)
+                break;
+            down--;
+        }
+        if (up < down)
+            std::swap(houses[up], houses[down]);
+    }
+    std::swap(houses[low], houses[down]);
+    return down;
+}
 
-int main() {
+void quickSort(std::vector<HouseInfo>& houses, int low, int high)
+    {
+        if (low < high)
+        {
+            int pivot = partition(houses, low, high);
+            quickSort(houses, low, pivot - 1);
+            quickSort(houses, pivot + 1, high);
+        }
+    }
+
+void quickSortTop(std::map<std::string, std::vector<HouseInfo>>& HouseData){
+    auto start = std::chrono::high_resolution_clock ::now();
+
+    for (auto& entry : HouseData){
+        std::vector<HouseInfo>& houses = entry.second;
+        quickSort(houses, 0, houses.size() - 1);
+    }
+
+    auto stop = std::chrono::high_resolution_clock ::now();
+    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(stop-start);
+    std::cout << "Quick Sort Time in Milliseconds: " <<  duration.count()/1000.0 << std::endl;
+}
+
+// Function that displays the shell sorted housing data
+void displayHouseInfo(std::map<std::string, std::vector<HouseInfo>>& HouseData, std::string FileName){
+    std::ofstream homeOutputFile(FileName);
+    for (auto& entry : HouseData){
+        std::vector<HouseInfo>& houses = entry.second;
+        int n = houses.size();
+        for (int i = 0; i < n; i++) {
+            homeOutputFile << houses[i].RegionID << ", " << houses[i].State << ", " << houses[i].City << ", " << houses[i].CountyName << ", " << std::fixed << std::setprecision(2) << houses[i].MeanValue << std::endl;
+        }
+    }
+    homeOutputFile.close();
+}
+
+int main()
+{
     // Open input files for occupation salary data and home cost data
     std::ifstream homeCostFile("../PropertyValues.csv");
     std::ifstream OccupationDataFile("../JobSalarys.csv");
 
     // Check if files are successfully opened
-    if (!homeCostFile.is_open()) {
+    if (!homeCostFile.is_open())
+    {
         std::cerr << "Error opening files!" << std::endl;
         return 1;
     }
 
     // Map to store zip code information and salary information
     std::map<std::string, std::vector<HouseInfo>> houseData;
+    // houseData is sorted by shell sort, unsortedHouseData is sorted by quick sort
+    // This is to ensure both sorting algorithms are being sorted on the same unsorted dataset
+    std::map<std::string, std::vector<HouseInfo>> unsortedHouseData;
     std::map<std::string, std::vector<Occupation>> occupationData;
-
-
-
+    std::map<std::string, std::string> occupationNames;
 
     // Read home cost data from the file
     std::string homeCostLine;
     std::getline(homeCostFile, homeCostLine);
-    while (std::getline(homeCostFile, homeCostLine)) {
+    while (std::getline(homeCostFile, homeCostLine))
+    {
         std::istringstream iss(homeCostLine);
         std::string RegionIDStr, StateStr, CityStr, CountyNameStr, MeanValueStr;
 
@@ -129,18 +193,18 @@ int main() {
 
         HouseInfo tmp = HouseInfo(RegionIDStr, StateStr, CityStr, CountyNameStr, MeanValue);
         houseData[StateStr].push_back(tmp);
-
+        unsortedHouseData[StateStr].push_back(tmp);
     }
 
-
-    // Read occupation  data from the file
+    // Read occupation data from the file
     std::string OccupationDataLine;
     std::getline(OccupationDataFile, OccupationDataLine);
-    while (std::getline(OccupationDataFile, OccupationDataLine)) {
+    while (std::getline(OccupationDataFile, OccupationDataLine))
+    {
         std::istringstream iss(OccupationDataLine);
         std::string AREA, PRIM_STATE, OCC_TITLE, S_TOT_EMP, S_A_MEAN;
 
-        //ParseCSVfields
+        // Parse CSV fields
         std::getline(iss, AREA, ',');
         std::getline(iss, PRIM_STATE, ',');
         std::getline(iss, OCC_TITLE, ',');
@@ -152,64 +216,84 @@ int main() {
 
         Occupation tmp = Occupation(AREA, PRIM_STATE, OCC_TITLE, TOT_EMP, A_MEAN);
         occupationData[PRIM_STATE].push_back(tmp);
-
+        occupationNames[OCC_TITLE] = OCC_TITLE;
     }
-
 
     // Close input files
     homeCostFile.close();
     OccupationDataFile.close();
 
+    std::cout << "Welcome to Oh, the places you can go!" << std::endl;
+    std::cout
+            << "This program will match you with the top 20 homes most suitable for you based on occupation and desired state to live in"
+            << std::endl;
+    std::cout << "Below is the list of options: " << std::endl;
 
+    // Prints list of choices of occupations
+    for (auto i = occupationNames.begin(); i != occupationNames.end(); i++)
+    {
+        std::cout << i->second << std::endl;
+    }
+
+    std::cout << std::endl;
+    std::cout << "Please enter an occupation to search for" << ": ";
     // Prompt the user to enter a keyword to search for to filter the OCC_TITLE
     std::string keyword;
-    std::cout << "Please enter a keyword to search for.";
     std::cin >> keyword;
 
+    std::set<std::string> matchingTitles = searchOccupations(occupationData, keyword);
 
-    std::set<std::string> matchingTitles = searchOccupations(occupationData,keyword);
+    //for(const auto& title:matchingTitles){
+    // std::cout << title << std::endl;
+    // }
 
-    for(const auto& title:matchingTitles){
-        std::cout << title << std::endl;
+    std::cout << std::endl;
+    if (!matchingTitles.empty())
+    {
+        size_t count = 1;
+        for (const auto &title: matchingTitles)
+        {
+            std::cout << count << ". " << title << '\n';
+            count++;
+        }
+    std::cout << std::endl;
+
+        // Prompt the user to select a number corresponding to OCC_TITLE
+        std::cout << "Select the number corresponding to the occupation: ";
+        size_t selectedNumber;
+        std::cin >> selectedNumber;
+
+        // Validate the user input
+        if (selectedNumber > 0 && selectedNumber <= matchingTitles.size())
+        {
+            auto it = matchingTitles.begin();
+            std::advance(it, selectedNumber - 1);
+            std::string selectedTitle = *it;
+            std::cout << selectedTitle << std::endl;
+
+
+            // return best cost of living for the top 5 states
+
+
+            // user selects a state
+
+
+            // print lowest priced A_MEAN areas for houses from the selected state
+
+            std:: cout << std::endl;
+            // Search using shell sort
+            shellSort(houseData);
+            //displayHouseInfo(houseData, "../shellSortedFile.txt");
+
+            // Search using Quicksort
+            quickSortTop(unsortedHouseData);
+           // displayHouseInfo(houseData, "../quickSortedFile.txt");
+
+        }
     }
-
-
-    size_t count=1;
-    for(const auto& title:matchingTitles){
-        std::cout<<count<<"."<<title<<'\n';
-        count++;
-    }
-
-//    Prompt the user to select a number corresponding to OCC_TITLE
-    std::cout<<"Select a number corresponding to the OCC_TITLE:";
-    size_t selectedNumber;
-    std::cin >> selectedNumber;
-
-
-//    Validate the user input
-    if(selectedNumber > 0 && selectedNumber <= matchingTitles.size()) {
-        auto it = matchingTitles.begin();
-        std::advance(it, selectedNumber - 1);
-        std::string selectedTitle = *it;
-
-        std::cout << selectedTitle << std::endl;
-
-
-        // return best cost of living for the top 5 states
-
-
-        // user selects a state
-
-
-        // print lowest priced A_MEAN areas for houses from the selected state
-
-        // Search using shell sort
-        shellSort(houseData);
-
-
-        // Search using Quicksort
-
-
+    else
+    {
+        std::cout << "No Occupation found. Rerun program." << std::endl;
     }
     return 0;
 }
