@@ -117,6 +117,7 @@ int partition(std::vector<HouseInfo>& houses, int low, int high)
 }
 
 void quickSort(std::vector<HouseInfo>& houses, int low, int high)
+<<<<<<< Updated upstream
     {
         if (low < high)
         {
@@ -125,6 +126,16 @@ void quickSort(std::vector<HouseInfo>& houses, int low, int high)
             quickSort(houses, pivot + 1, high);
         }
     }
+=======
+{
+    if (low < high)
+    {
+        int pivot = partition(houses, low, high);
+        quickSort(houses, low, pivot - 1);
+        quickSort(houses, pivot + 1, high);
+    }
+}
+>>>>>>> Stashed changes
 
 void quickSortTop(std::map<std::string, std::vector<HouseInfo>>& HouseData){
     auto start = std::chrono::high_resolution_clock ::now();
@@ -139,6 +150,81 @@ void quickSortTop(std::map<std::string, std::vector<HouseInfo>>& HouseData){
     std::cout << "Quick Sort Time in Milliseconds: " <<  duration.count()/1000.0 << std::endl;
 }
 
+<<<<<<< Updated upstream
+=======
+using namespace std;
+// map<string, vector<HouseInfo>> & HouseData
+map<string, vector<HouseInfo>> top5States(string title, int numStates, std::map<std::string, std::vector<HouseInfo>>& HouseData, std::map<std::string, std::vector<Occupation>> occupationData){
+
+    ///Variables for each state
+    map<string, float> advJobSalaryPerState;
+    map<string, float> advHomeValuePerState;
+
+    ///Find the advJobSalaryPerState
+    std::map<std::string, std::vector<Occupation>>::iterator iter;
+    for(iter = occupationData.begin(); iter != occupationData.end(); iter++){
+        //cout << iter->first << endl; //iter->first is the state code
+        std::vector<Occupation>::iterator stateIter;
+        int total = 0, counter = 0;
+        for(stateIter = occupationData[iter->first].begin(); stateIter != occupationData[iter->first].end(); stateIter++) {
+            if(stateIter->OCC_TITLE == title){
+                total += stateIter->A_MEAN;
+                counter += 1;
+            }
+
+        }
+
+        if(counter != 0)
+            advJobSalaryPerState[iter->first] = (float)total / (float) counter;
+        else
+            advJobSalaryPerState[iter->first] = 0;
+    }
+
+    ///Find the advHomeValuePerState
+    std::map<std::string, std::vector<HouseInfo>>::iterator homeValIter;
+    for(homeValIter = HouseData.begin(); homeValIter != HouseData.end(); homeValIter++){
+        int total = 0, counter = 0;
+        vector<HouseInfo>::iterator houseInfoIter;
+//        cout << homeValIter->first << ": ";
+        for(houseInfoIter = HouseData[homeValIter->first].begin(); houseInfoIter != HouseData[homeValIter->first].end(); houseInfoIter++){
+            cout << houseInfoIter->MeanValue << " ";
+            total += houseInfoIter->MeanValue;
+            counter += 1;
+        }
+//        cout << endl << total << " | " << counter << endl;
+        advHomeValuePerState[homeValIter->first] = (float)total / (float)counter;
+//        cout << endl;
+    }
+
+    map<string, float> houseAdv;
+    std::map<string, float>::iterator advHomeValueIter;
+    for(advHomeValueIter = advJobSalaryPerState.begin(); advHomeValueIter != advJobSalaryPerState.end(); advHomeValueIter++){
+        houseAdv[advHomeValueIter->first] = (float)  advJobSalaryPerState[advHomeValueIter->first] / (float) advHomeValuePerState[advHomeValueIter->first];
+    }
+
+    /// Orginise and get the top states to live in
+    // Creating a vector of pairs to store key-value pairs
+    std::vector<std::pair<string, float>> vectorPairs(houseAdv.begin(), houseAdv.end());
+
+    // Sorting the vector by values
+    std::sort(vectorPairs.begin(), vectorPairs.end(), [](const auto& a, const auto& b) {
+        return a.second > b.second;
+    });
+
+    map<string, vector<HouseInfo>> returnData;
+    int counter = 0;
+
+    for(int i = 0; i < vectorPairs.size(); i++){
+        if(counter < numStates && vectorPairs[i].second < 1) {
+            returnData[vectorPairs[i].first] = HouseData[vectorPairs[i].first];
+            counter++;
+        }
+    }
+
+    return returnData;
+}
+
+>>>>>>> Stashed changes
 // Function that displays the shell sorted housing data
 void displayHouseInfo(std::map<std::string, std::vector<HouseInfo>>& HouseData, std::string FileName){
     std::ofstream homeOutputFile(FileName);
@@ -238,7 +324,11 @@ int main()
     std::cout << std::endl;
     std::cout << "Please enter an occupation to search for" << ": ";
     // Prompt the user to enter a keyword to search for to filter the OCC_TITLE
+<<<<<<< Updated upstream
     std::string keyword;
+=======
+    std::string keyword;// = "Computer";
+>>>>>>> Stashed changes
     std::cin >> keyword;
 
     std::set<std::string> matchingTitles = searchOccupations(occupationData, keyword);
@@ -256,11 +346,19 @@ int main()
             std::cout << count << ". " << title << '\n';
             count++;
         }
+<<<<<<< Updated upstream
     std::cout << std::endl;
 
         // Prompt the user to select a number corresponding to OCC_TITLE
         std::cout << "Select the number corresponding to the occupation: ";
         size_t selectedNumber;
+=======
+        std::cout << std::endl;
+
+        // Prompt the user to select a number corresponding to OCC_TITLE
+        std::cout << "Select the number corresponding to the occupation: ";
+        size_t selectedNumber;//= 1;
+>>>>>>> Stashed changes
         std::cin >> selectedNumber;
 
         // Validate the user input
@@ -273,6 +371,11 @@ int main()
 
 
             // return best cost of living for the top 5 states
+<<<<<<< Updated upstream
+=======
+            cout << selectedTitle << endl;
+            map<string, vector<HouseInfo>> topStates = top5States(selectedTitle, 5, houseData, occupationData);
+>>>>>>> Stashed changes
 
 
             // user selects a state
@@ -287,7 +390,11 @@ int main()
 
             // Search using Quicksort
             quickSortTop(unsortedHouseData);
+<<<<<<< Updated upstream
            // displayHouseInfo(houseData, "../quickSortedFile.txt");
+=======
+            // displayHouseInfo(houseData, "../quickSortedFile.txt");
+>>>>>>> Stashed changes
 
         }
     }
