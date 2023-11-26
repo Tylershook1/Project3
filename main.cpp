@@ -117,16 +117,6 @@ int partition(std::vector<HouseInfo>& houses, int low, int high)
 }
 
 void quickSort(std::vector<HouseInfo>& houses, int low, int high)
-<<<<<<< Updated upstream
-    {
-        if (low < high)
-        {
-            int pivot = partition(houses, low, high);
-            quickSort(houses, low, pivot - 1);
-            quickSort(houses, pivot + 1, high);
-        }
-    }
-=======
 {
     if (low < high)
     {
@@ -135,7 +125,6 @@ void quickSort(std::vector<HouseInfo>& houses, int low, int high)
         quickSort(houses, pivot + 1, high);
     }
 }
->>>>>>> Stashed changes
 
 void quickSortTop(std::map<std::string, std::vector<HouseInfo>>& HouseData){
     auto start = std::chrono::high_resolution_clock ::now();
@@ -150,8 +139,6 @@ void quickSortTop(std::map<std::string, std::vector<HouseInfo>>& HouseData){
     std::cout << "Quick Sort Time in Milliseconds: " <<  duration.count()/1000.0 << std::endl;
 }
 
-<<<<<<< Updated upstream
-=======
 using namespace std;
 // map<string, vector<HouseInfo>> & HouseData
 map<string, vector<HouseInfo>> top5States(string title, int numStates, std::map<std::string, std::vector<HouseInfo>>& HouseData, std::map<std::string, std::vector<Occupation>> occupationData){
@@ -224,7 +211,6 @@ map<string, vector<HouseInfo>> top5States(string title, int numStates, std::map<
     return returnData;
 }
 
->>>>>>> Stashed changes
 // Function that displays the shell sorted housing data
 void displayHouseInfo(std::map<std::string, std::vector<HouseInfo>>& HouseData, std::string FileName){
     std::ofstream homeOutputFile(FileName);
@@ -324,11 +310,7 @@ int main()
     std::cout << std::endl;
     std::cout << "Please enter an occupation to search for" << ": ";
     // Prompt the user to enter a keyword to search for to filter the OCC_TITLE
-<<<<<<< Updated upstream
-    std::string keyword;
-=======
     std::string keyword;// = "Computer";
->>>>>>> Stashed changes
     std::cin >> keyword;
 
     std::set<std::string> matchingTitles = searchOccupations(occupationData, keyword);
@@ -346,19 +328,11 @@ int main()
             std::cout << count << ". " << title << '\n';
             count++;
         }
-<<<<<<< Updated upstream
-    std::cout << std::endl;
-
-        // Prompt the user to select a number corresponding to OCC_TITLE
-        std::cout << "Select the number corresponding to the occupation: ";
-        size_t selectedNumber;
-=======
         std::cout << std::endl;
 
         // Prompt the user to select a number corresponding to OCC_TITLE
         std::cout << "Select the number corresponding to the occupation: ";
         size_t selectedNumber;//= 1;
->>>>>>> Stashed changes
         std::cin >> selectedNumber;
 
         // Validate the user input
@@ -371,11 +345,8 @@ int main()
 
 
             // return best cost of living for the top 5 states
-<<<<<<< Updated upstream
-=======
             cout << selectedTitle << endl;
             map<string, vector<HouseInfo>> topStates = top5States(selectedTitle, 5, houseData, occupationData);
->>>>>>> Stashed changes
 
 
             // user selects a state
@@ -390,11 +361,7 @@ int main()
 
             // Search using Quicksort
             quickSortTop(unsortedHouseData);
-<<<<<<< Updated upstream
-           // displayHouseInfo(houseData, "../quickSortedFile.txt");
-=======
             // displayHouseInfo(houseData, "../quickSortedFile.txt");
->>>>>>> Stashed changes
 
         }
     }
