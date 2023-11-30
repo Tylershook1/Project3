@@ -22,6 +22,10 @@ public:
     double TOT_EMP;
     double A_MEAN;
 
+    bool operator>(const Occupation& other) const{
+        return A_MEAN > other.A_MEAN;
+    }
+
     Occupation(const std::string& area, const std::string& prim_state, const std::string& occ_title, double tot_emp, double a_mean)
             : AREA(area), PRIM_STATE(prim_state), OCC_TITLE(occ_title), TOT_EMP(tot_emp), A_MEAN(a_mean) {}
 };
@@ -43,6 +47,9 @@ public:
     bool operator>(const HouseInfo& other) const{
         return MeanValue > other.MeanValue;
     }
+
+
+
 };
 
 // Function to check if a string contains only numeric characters
@@ -68,28 +75,48 @@ std::set<std::string> searchOccupations(const std::map<std::string, std::vector<
     return matchingTitles;
 }
 
-void shellSort(std::map<std::string, std::vector<HouseInfo>>& HouseData){
-    auto start = std::chrono::high_resolution_clock ::now();
+template <typename T>
+void countRecords(std::map<std::string, std::vector<T>>& data){
+    size_t totalVectorsinSalary = 0;
+    size_t totalEntriesinSalary = 0;
 
-    for(auto& entry : HouseData){
-        std::vector<HouseInfo>& houses = entry.second;
-        int n = houses.size();
+    for (const auto& entry : data) {
+        // Increment the number of vectors
+        totalVectorsinSalary++;
 
-        for(int gap = n/2; gap > 0; gap/=2){
-            for(int i = gap; i < n; i++){
-                HouseInfo tmp = houses[i];
+        // Increment the number of entries by the size of the vector
+        totalEntriesinSalary += entry.second.size();
+    }
+
+    std::cout << std::endl << "Total number of vectors in  Data: " << totalVectorsinSalary << std::endl;
+    std::cout << "Total number of entries in Data: " << totalEntriesinSalary << std::endl;
+}
+
+
+// Define a template function for shell sorting
+template <typename T>
+void shellSortData(std::map<std::string, std::vector<T>>& data) {
+    auto start = std::chrono::high_resolution_clock::now();
+
+    for (auto& entry : data) {
+        std::vector<T>& dataSet = entry.second;
+        int n = dataSet.size();
+
+        for (int gap = n / 2; gap > 0; gap /= 2) {
+            for (int i = gap; i < n; i++) {
+                T tmp = dataSet[i];
                 int j;
-                for(j = i; j >=gap && houses[j - gap] > tmp; j -=gap){
-                    houses[j] = houses[j - gap];
+                for (j = i; j >= gap && dataSet[j - gap] > tmp; j -= gap) {
+                    dataSet[j] = dataSet[j - gap];
                 }
-                houses[j] = tmp;
+                dataSet[j] = tmp;
             }
         }
     }
 
-    auto stop = std::chrono::high_resolution_clock ::now();
-    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(stop-start);
-    std::cout << "Shell Sort Time in Milliseconds: " <<  duration.count()/1000.0 << std::endl;
+    auto stop = std::chrono::high_resolution_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(stop - start);
+    std::cout << "Shell Sort Time in Milliseconds: " << duration.count() / 1000.0 << std::endl;
 }
 
 int partition(std::vector<HouseInfo>& houses, int low, int high)
@@ -138,7 +165,7 @@ void quickSortTop(std::map<std::string, std::vector<HouseInfo>>& HouseData){
 
     auto stop = std::chrono::high_resolution_clock ::now();
     auto duration = std::chrono::duration_cast<std::chrono::microseconds>(stop-start);
-    std::cout << "Quick Sort Time in Milliseconds: " <<  duration.count()/1000.0 << std::endl;
+    std::cout << "Quick Sort Time on Housing Data in Milliseconds: " <<  duration.count()/1000.0 << std::endl;
 }
 
 // map<string, vector<HouseInfo>> & HouseData
@@ -333,42 +360,22 @@ int main()
             // return best cost of living for the top 5 states
             top5States(selectedTitle, 5, houseData, occupationData);
 
-            size_t totalVectors = 0;
-            size_t totalEntries = 0;
-
-            for (const auto& entry : unsortedHouseData) {
-                // Increment the number of vectors
-                totalVectors++;
-
-                // Increment the number of entries by the size of the vector
-                totalEntries += entry.second.size();
-            }
-
-            std::cout << "Total number of vectors in House Data: " << totalVectors << std::endl;
-            std::cout << "Total number of entries in House Data: " << totalEntries << std::endl;
-
-            size_t totalVectorsinSalary = 0;
-            size_t totalEntriesinSalary = 0;
-
-            for (const auto& entry : occupationData) {
-                // Increment the number of vectors
-                totalVectorsinSalary++;
-
-                // Increment the number of entries by the size of the vector
-                totalEntriesinSalary += entry.second.size();
-            }
-
-            std::cout << "Total number of vectors in Salary Data: " << totalVectorsinSalary << std::endl;
-            std::cout << "Total number of entries in Salary Data: " << totalEntriesinSalary << std::endl;
 
 
-
+            countRecords(unsortedHouseData);
             std:: cout << std::endl;
             // Search using shell sort
-            shellSort(houseData);
+            shellSortData(houseData);
 
             // Search using Quicksort
             quickSortTop(unsortedHouseData);
+
+
+
+            countRecords(occupationData);
+            std:: cout << std::endl;
+            // Search using shell sort
+            shellSortData(occupationData);
 
         }
     }
