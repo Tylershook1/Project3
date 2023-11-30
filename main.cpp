@@ -10,6 +10,8 @@
 #include <chrono>
 #include <iomanip>
 #include <cmath>
+using namespace std;
+
 
 // Class representing an occupation with relevant information
 class Occupation {
@@ -139,92 +141,72 @@ void quickSortTop(std::map<std::string, std::vector<HouseInfo>>& HouseData){
     std::cout << "Quick Sort Time in Milliseconds: " <<  duration.count()/1000.0 << std::endl;
 }
 
-using namespace std;
 // map<string, vector<HouseInfo>> & HouseData
-map<string, vector<HouseInfo>> top5States(string title, int numStates, std::map<std::string, std::vector<HouseInfo>>& HouseData, std::map<std::string, std::vector<Occupation>> occupationData){
+void top5States(
+        std::string title,
+        int numStates,
+        std::map<std::string, std::vector<HouseInfo>>& HouseData,
+        std::map<std::string, std::vector<Occupation>> occupationData
+) {
+    // Variables to store average job salary and average home value per state
+    std::map<std::string, float> advJobSalaryPerState;
+    std::map<std::string, float> advHomeValuePerState;
 
-    ///Variables for each state
-    map<string, float> advJobSalaryPerState;
-    map<string, float> advHomeValuePerState;
-
-    ///Find the advJobSalaryPerState
-    std::map<std::string, std::vector<Occupation>>::iterator iter;
-    for(iter = occupationData.begin(); iter != occupationData.end(); iter++){
-        //cout << iter->first << endl; //iter->first is the state code
-        std::vector<Occupation>::iterator stateIter;
+    // Calculate average job salary per state
+    for (auto iter = occupationData.begin(); iter != occupationData.end(); ++iter) {
         int total = 0, counter = 0;
-        for(stateIter = occupationData[iter->first].begin(); stateIter != occupationData[iter->first].end(); stateIter++) {
-            if(stateIter->OCC_TITLE == title){
-                total += stateIter->A_MEAN;
+        for (const auto& occupation : iter->second) {
+            if (occupation.OCC_TITLE == title) {
+                total += occupation.A_MEAN;
                 counter += 1;
             }
-
         }
 
-        if(counter != 0)
-            advJobSalaryPerState[iter->first] = (float)total / (float) counter;
-        else
-            advJobSalaryPerState[iter->first] = 0;
+        // Calculate and store the average job salary for the state
+        advJobSalaryPerState[iter->first] = (counter != 0) ? static_cast<float>(total) / counter : 0;
     }
 
-    ///Find the advHomeValuePerState
-    std::map<std::string, std::vector<HouseInfo>>::iterator homeValIter;
-    for(homeValIter = HouseData.begin(); homeValIter != HouseData.end(); homeValIter++){
+    // Calculate average home value per state
+    for (auto iter = HouseData.begin(); iter != HouseData.end(); ++iter) {
         int total = 0, counter = 0;
-        vector<HouseInfo>::iterator houseInfoIter;
-//        cout << homeValIter->first << ": ";
-        for(houseInfoIter = HouseData[homeValIter->first].begin(); houseInfoIter != HouseData[homeValIter->first].end(); houseInfoIter++){
-//            cout << houseInfoIter->MeanValue << " ";
-            total += houseInfoIter->MeanValue;
+        for (const auto& houseInfo : iter->second) {
+            total += houseInfo.MeanValue;
             counter += 1;
         }
-//        cout << endl << total << " | " << counter << endl;
-        advHomeValuePerState[homeValIter->first] = (float)total / (float)counter;
-//        cout << endl;
+
+        // Calculate and store the average home value for the state
+        advHomeValuePerState[iter->first] = (counter != 0) ? static_cast<float>(total) / counter : 0;
     }
 
-    map<string, float> houseAdv;
-    std::map<string, float>::iterator advHomeValueIter;
-    for(advHomeValueIter = advJobSalaryPerState.begin(); advHomeValueIter != advJobSalaryPerState.end(); advHomeValueIter++){
-        houseAdv[advHomeValueIter->first] = (float)  advJobSalaryPerState[advHomeValueIter->first] / (float) advHomeValuePerState[advHomeValueIter->first];
+    // Calculate the advantage score for each state
+    std::map<std::string, float> houseAdv;
+    for (const auto& entry : advJobSalaryPerState) {
+        houseAdv[entry.first] = (entry.second != 0) ? (advJobSalaryPerState[entry.first]- (advHomeValuePerState[entry.first]/30.0)) : 0;
     }
 
-    /// Orginise and get the top states to live in
-    // Creating a vector of pairs to store key-value pairs
-    std::vector<std::pair<string, float>> vectorPairs(houseAdv.begin(), houseAdv.end());
-
-    // Sorting the vector by values
+    // Sort the states based on the advantage score in descending order
+    std::vector<std::pair<std::string, float>> vectorPairs(houseAdv.begin(), houseAdv.end());
     std::sort(vectorPairs.begin(), vectorPairs.end(), [](const auto& a, const auto& b) {
         return a.second > b.second;
     });
 
-    map<string, vector<HouseInfo>> returnData;
-    int counter = 0;
 
-    for(int i = 0; i < vectorPairs.size(); i++){
-        if(counter < numStates && vectorPairs[i].second < 1) {
-            returnData[vectorPairs[i].first] = HouseData[vectorPairs[i].first];
-            counter++;
-        }
+    // Select the top states and store their information
+    for (int i = 0; i < 5; ++i) {
+            const std::string& state = vectorPairs[i].first;
+            float jobSalary = advJobSalaryPerState[state];
+            float homeValue = advHomeValuePerState[state];
+            const std::vector<HouseInfo>& houseInfoVec = HouseData[state];
+
+            std::cout << "State: " << state << std::endl;
+            std::cout << "  Average Job Salary: " << jobSalary << std::endl;
+            std::cout << "  Average Home Value: " << homeValue << std::endl;
+            std::cout << "  Average Monthly Payment: " << (homeValue/360.0) << std::endl;
+            std::cout << "  Difference in Job Salary and Yearly Mortgage Payments: " << (jobSalary - (homeValue/30.0)) << std::endl;
+
     }
-
-    cout << "returnData.size(): " << returnData.size() << endl;
-
-    return returnData;
 }
 
-// Function that displays the shell sorted housing data
-void displayHouseInfo(std::map<std::string, std::vector<HouseInfo>>& HouseData, std::string FileName){
-    std::ofstream homeOutputFile(FileName);
-    for (auto& entry : HouseData){
-        std::vector<HouseInfo>& houses = entry.second;
-        int n = houses.size();
-        for (int i = 0; i < n; i++) {
-            homeOutputFile << houses[i].RegionID << ", " << houses[i].State << ", " << houses[i].City << ", " << houses[i].CountyName << ", " << std::fixed << std::setprecision(2) << houses[i].MeanValue << std::endl;
-        }
-    }
-    homeOutputFile.close();
-}
 
 int main()
 {
@@ -349,23 +331,44 @@ int main()
 
 
             // return best cost of living for the top 5 states
-//            cout << selectedTitle << endl;
-            map<string, vector<HouseInfo>> topStates = top5States(selectedTitle, 5, houseData, occupationData);
+            top5States(selectedTitle, 5, houseData, occupationData);
+
+            size_t totalVectors = 0;
+            size_t totalEntries = 0;
+
+            for (const auto& entry : unsortedHouseData) {
+                // Increment the number of vectors
+                totalVectors++;
+
+                // Increment the number of entries by the size of the vector
+                totalEntries += entry.second.size();
+            }
+
+            std::cout << "Total number of vectors in House Data: " << totalVectors << std::endl;
+            std::cout << "Total number of entries in House Data: " << totalEntries << std::endl;
+
+            size_t totalVectorsinSalary = 0;
+            size_t totalEntriesinSalary = 0;
+
+            for (const auto& entry : occupationData) {
+                // Increment the number of vectors
+                totalVectorsinSalary++;
+
+                // Increment the number of entries by the size of the vector
+                totalEntriesinSalary += entry.second.size();
+            }
+
+            std::cout << "Total number of vectors in Salary Data: " << totalVectorsinSalary << std::endl;
+            std::cout << "Total number of entries in Salary Data: " << totalEntriesinSalary << std::endl;
 
 
-            // user selects a state
-
-
-            // print lowest priced A_MEAN areas for houses from the selected state
 
             std:: cout << std::endl;
             // Search using shell sort
             shellSort(houseData);
-            //displayHouseInfo(houseData, "../shellSortedFile.txt");
 
             // Search using Quicksort
             quickSortTop(unsortedHouseData);
-            // displayHouseInfo(houseData, "../quickSortedFile.txt");
 
         }
     }
