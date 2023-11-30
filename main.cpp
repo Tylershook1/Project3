@@ -174,7 +174,7 @@ map<string, vector<HouseInfo>> top5States(string title, int numStates, std::map<
         vector<HouseInfo>::iterator houseInfoIter;
 //        cout << homeValIter->first << ": ";
         for(houseInfoIter = HouseData[homeValIter->first].begin(); houseInfoIter != HouseData[homeValIter->first].end(); houseInfoIter++){
-            cout << houseInfoIter->MeanValue << " ";
+//            cout << houseInfoIter->MeanValue << " ";
             total += houseInfoIter->MeanValue;
             counter += 1;
         }
@@ -207,6 +207,8 @@ map<string, vector<HouseInfo>> top5States(string title, int numStates, std::map<
             counter++;
         }
     }
+
+    cout << "returnData.size(): " << returnData.size() << endl;
 
     return returnData;
 }
@@ -335,6 +337,8 @@ int main()
         size_t selectedNumber;//= 1;
         std::cin >> selectedNumber;
 
+//        std::cout << "fslksdkls" << std::endl;
+
         // Validate the user input
         if (selectedNumber > 0 && selectedNumber <= matchingTitles.size())
         {
@@ -345,7 +349,7 @@ int main()
 
 
             // return best cost of living for the top 5 states
-            cout << selectedTitle << endl;
+//            cout << selectedTitle << endl;
             map<string, vector<HouseInfo>> topStates = top5States(selectedTitle, 5, houseData, occupationData);
 
 
