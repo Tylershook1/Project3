@@ -351,6 +351,9 @@ int main()
     }
 
     std::cout << std::endl;
+    bool loop = true;
+    while(loop){
+
     std::cout << "Please enter an occupation to search for" << ": ";
     // Prompt the user to enter a keyword to search for to filter the OCC_TITLE
     std::string keyword;
@@ -408,10 +411,12 @@ int main()
             quickSortTop(unsortedOccupationData);
 
         }
+        loop = false;
     }
     else
     {
-        std::cout << "No Occupation found. Rerun program." << std::endl;
+        std::cout << "No Occupation found. Try again." << std::endl;
+    }
     }
     return 0;
 }
