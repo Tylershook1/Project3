@@ -68,6 +68,7 @@ double convertToDouble(const std::string& str) {
     return isdigit(str[0]) ? std::stod(str) : 0.0;
 }
 
+// Function to search if selected occupation is a keyword
 std::set<std::string> searchOccupations(const std::map<std::string, std::vector<Occupation>> occupationData, const std::string& keyword) {
     std::set<std::string> matchingTitles;
 
@@ -81,6 +82,8 @@ std::set<std::string> searchOccupations(const std::map<std::string, std::vector<
     return matchingTitles;
 }
 
+// Function that returns number of data points in each dataset to distinguish sorts
+// 100092 = Occupation Data, 26261 = House Data
 template <typename T>
 void countRecords(std::map<std::string, std::vector<T>>& data){
     size_t totalVectorsinSalary = 0;
@@ -100,6 +103,7 @@ void countRecords(std::map<std::string, std::vector<T>>& data){
 
 
 // Define a template function for shell sorting
+// Gap is n/2
 template <typename T>
 void shellSortData(std::map<std::string, std::vector<T>>& data) {
     auto start = std::chrono::high_resolution_clock::now();
@@ -130,14 +134,12 @@ template <typename T>
 int partition(std::vector<T>& data, int low, int high)
 {
     // Select the pivot element
-   // double pivot = data[low].MeanValue;
     T pivot = data[low];
     int up = low, down = high;
     while (up < down)
     {
         for (int j = up; j < high; j++)
         {
-            //if (data[up].MeanValue > pivot)
             if (data[up] > pivot)
                 break;
             up++;
@@ -167,7 +169,7 @@ void quickSort(std::vector<T>& data, int low, int high)
     }
 }
 
-// Define a template function for shell sorting
+// Define a template function for quick sorting
 template <typename T>
 void quickSortTop(std::map<std::string, std::vector<T>>& data){
     auto start = std::chrono::high_resolution_clock ::now();
@@ -183,6 +185,7 @@ void quickSortTop(std::map<std::string, std::vector<T>>& data){
 }
 
 // Function that displays the shell sorted housing data to confirm it works
+// Mainly used for debugging
 void displayHouseInfo(std::map<std::string, std::vector<HouseInfo>>& HouseData, std::string FileName){
     std::ofstream homeOutputFile(FileName);
     for (auto& entry : HouseData){
@@ -195,10 +198,7 @@ void displayHouseInfo(std::map<std::string, std::vector<HouseInfo>>& HouseData, 
     homeOutputFile.close();
 }
 
-
-
-
-// map<string, vector<HouseInfo>> & HouseData
+// Function to find the top 5 best cost of living states
 void top5States(
         std::string title,
         int numStates,
@@ -357,8 +357,6 @@ int main()
     std::cin >> keyword;
 
     std::set<std::string> matchingTitles = searchOccupations(occupationData, keyword);
-
-
     std::cout << std::endl;
     if (!matchingTitles.empty())
     {
@@ -375,9 +373,6 @@ int main()
         size_t selectedNumber;
         std::cin >> selectedNumber;
 
-
-
-
         // Validate the user input
         if (selectedNumber > 0 && selectedNumber <= matchingTitles.size())
         {
@@ -386,23 +381,23 @@ int main()
             std::string selectedTitle = *it;
             std::cout << selectedTitle << std::endl;
 
-
             // return best cost of living for the top 5 states
             std::cout << std::endl;
             std::cout << "Here are the top choices for you:" << std::endl;
             std::cout << std::endl;
             top5States(selectedTitle, 5, houseData, occupationData);
 
-
-
+            // Return number of data points for house data
             countRecords(unsortedHouseData);
             std:: cout << std::endl;
+
             // Search using shell sort on house data
             shellSortData(houseData);
 
             // Search using quicksort on house data
             quickSortTop(unsortedHouseData);
 
+            // Return number of data points for occupation data
             countRecords(occupationData);
             std:: cout << std::endl;
 
